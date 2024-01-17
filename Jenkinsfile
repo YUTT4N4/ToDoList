@@ -5,7 +5,7 @@ pipeline {
         stage('Running') {
             steps {
                 echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
-                withCredentials([usernamePassword(credentialsId: 'mydjangoapp', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) 
+                withCredentials([usernamePassword(credentialsId: 'your-dockerhub-username', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) 
             }
         }
         stage('Build Image') {
