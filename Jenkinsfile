@@ -10,16 +10,16 @@ pipeline {
         stage('Build Image') {
             steps {
                 echo 'Building...'
-                sh 'docker build -t yutt4n4/todolist .'
+                sh 'docker build -t todolist:latest .'
             }
         }
         stage('Push Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'yutt4n4', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                //withCredentials([usernamePassword(credentialsId: 'yutt4n4', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                     // This block ensures that the credentials are available for subsequent stages
                     // You can perform additional setup or validations here if needed
                 echo 'Pushing...'
-                sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+                sh 'docker login -u chanayai13524@gmail.com -p T3chc@mp13524'
                 sh 'docker push yutt4n4/todolist:latest'
                 }
             }
@@ -32,8 +32,6 @@ pipeline {
                 sh 'docker run -d --name django_todol -p 8111:80 yutt4n4/todolist:latest'
             }
         }
-    }
-
     triggers {
         pollSCM('* * * * *')
     }
