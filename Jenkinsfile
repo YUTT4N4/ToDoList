@@ -5,7 +5,7 @@ pipeline {
 // Agent block
 agent {
    node {
-      label 'Manage_Contact_Demo'
+      label 'Manage_ToDoList'
    }
 }
 options {
@@ -21,6 +21,14 @@ parameters {
    
    booleanParam(name: "PushImage", defaultValue: false)
 }
+
+stages {
+    stage('Running') {
+        steps {
+            echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
+        }
+    }
+
 // Stage Block
 stages {// stage blocks
    stage("Build docker images") {
