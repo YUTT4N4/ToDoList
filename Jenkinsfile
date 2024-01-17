@@ -5,10 +5,6 @@ pipeline {
         stage('Running') {
             steps {
                 echo "Running ${env.BUILD_ID} on ${env.JENKINS_URL}"
-                withCredentials([usernamePassword(credentialsId: 'yutt4n4', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    // This block ensures that the credentials are available for subsequent stages
-                    // You can perform additional setup or validations here if needed
-                }
             }
         }
         stage('Build Image') {
@@ -19,9 +15,13 @@ pipeline {
         }
         stage('Push Image') {
             steps {
+                withCredentials([usernamePassword(credentialsId: 'yutt4n4', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    // This block ensures that the credentials are available for subsequent stages
+                    // You can perform additional setup or validations here if needed
                 echo 'Pushing...'
                 sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                 sh 'docker push yutt4n4/todolist:latest'
+                }
             }
         }
         stage('Deploy Container') {
@@ -36,5 +36,10 @@ pipeline {
 
     triggers {
         pollSCM('* * * * *')
+    }
+    post {
+        always {
+            sh 'docker logout'
+        }
     }
 }
