@@ -1,30 +1,82 @@
 pipeline {
-  agent any
-  stages {
-    stage('Check Repository') {
-      steps {
-        git 'https://github.com/YUTT4N4/ToDoList.git'
-      }
+agent any
+
+tools {
+jdk ‘jdk11’
+maven ‘maven3’
+}
+
+environment{
+SCANNER_HOME= tool ‘sonar-scanner’
+}
+
+stages {
+    stage(‘Git Checkout ‘) {
+        steps {
+            git branch: ‘main’, changelog: false, poll: false, url: ‘https://github.com/Reliable-Royalty-29/SpringBoot-WebApplication.git'
+            }
+        }
+
+    stage(‘Code Compile’) {
+        steps {
+            sh “mvn compile”
+        }
     }
-    stage('Build Image') {
-      steps {
-        docker build -t todolist:latest .
-      }
+
+    stage(‘Run Test Cases’) {
+        steps {
+        sh “mvn test”
+        }
     }
-    stage('Push Image') {
-      steps {
-        docker push yutt4n4/todolist:latest
-      }
+
+    stage(‘Sonarqube Analysis’) {
+        steps {
+            withSonarQubeEnv(‘sonar-server’) {
+            sh ‘’’ $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Java-WebApp \
+            -Dsonar.java.binaries=. \
+            -Dsonar.projectKey=Java-WebApp ‘’’
+
+            }
+        }
+    }   
+
+    stage(‘OWASP Dependency Check’) {
+        steps {
+            dependencyCheck additionalArguments: ‘ — scan ./ ‘, odcInstallation: ‘DP’
+            dependencyCheckPublisher pattern: ‘**/dependency-check-report.xml’
+        }
     }
-    stage('Deploy Image') {
-      steps {
-        docker pull yutt4n4/todolist:latest
-      }
+
+    stage(‘Maven Build’) {
+        steps {
+            sh “mvn clean package”
+        }
     }
-    stage('Run Containerization') {
-      steps {
-        docker run -d -p 8111:80 todolist
-      }
+
+    stage(‘Docker Build & Push’) {
+        steps {
+            script {
+                withDockerRegistry(credentialsId: ‘D’, toolName: ‘docker’) {
+                sh “docker build -t webapp .”
+                sh “docker tag webapp dheeman29/webapp:latest”
+                sh “docker push dheeman29/webapp:latest “
+
+                }  
+            }
+        }
     }
-  }
+
+    stage(‘Docker Image scan’) {
+        steps {
+            sh “trivy image adijaiswal/webapp:latest “
+        }
+    }
+
+    stage(‘Deploy Container using Docker Image’) {
+        steps {
+            sh ‘docker run -d — name springboot -p 8085:8085 dheeman29/webapp’
+            }
+        }
+
+    }
 }
