@@ -30,33 +30,33 @@ jobs:
         python manage.py test
 
   deploy:
-      needs: build-and-push 
-      runs-on:
-        - self-hosted
-      steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Set up Docker
-        uses: actions/setup-python@v3
-        with:
-          python-version: '3.x' # Docker CLI is bundled with GitHub-hosted runners
+    needs: build-and-push 
+    runs-on:
+      - self-hosted
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Docker
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.x' # Docker CLI is bundled with GitHub-hosted runners
 
-      - name: Delete old container
-        run: docker rm -f frontend-order-management
+    - name: Delete old container
+      run: docker rm -f frontend-order-management
 
-      - name: Run Docker container
-        run: d
+    - name: Run Docker container
+      run: d
 
-      - name: Build Docker image
-        run: |
-          docker build -t yutt4n4/todolist .
-          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-          docker push yutt4n4/todolist:latest
+    - name: Build Docker image
+      run: |
+        docker build -t yutt4n4/todolist .
+        docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+        docker push yutt4n4/todolist:latest
 
-      - name: Pull image and Deploy from DockerHub
-        run: |
-          docker pull yutt4n4/todolist:latest
-          docker stop django_todolist || true
-          docker rm django_todolist || true
-          docker run -d --name django_todolist -p 8111:80 yutt4n4/todolist:latest
+    - name: Pull image and Deploy from DockerHub
+      run: |
+        docker pull yutt4n4/todolist:latest
+        docker stop django_todolist || true
+        docker rm django_todolist || true
+        docker run -d --name django_todolist -p 8111:80 yutt4n4/todolist:latest
