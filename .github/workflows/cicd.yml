@@ -30,31 +30,32 @@ jobs:
         python manage.py test
 
   deploy:
-    needs: build
-    runs-on: ubuntu-latest
+      needs: build-and-push 
+      runs-on:
+        - self-hosted
+      steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Docker
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x' # Docker CLI is bundled with GitHub-hosted runners
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Delete old container
+        run: docker rm -f frontend-order-management
 
-    - name: Set up Docker
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.x' # Docker CLI is bundled with GitHub-hosted runners
+      - name: Run Docker container
+        run: d
 
-    - name: Build Docker image
-      run: |
-        docker build -t yutt4n4/todolist .
-        docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-        docker push yutt4n4/todolist:latest
+      - name: Build Docker image
+        run: |
+          docker build -t yutt4n4/todolist .
+          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+          docker push yutt4n4/todolist:latest
 
-    - name: SSH into the server and deploy
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SERVER_IP }}
-        username: ${{ secrets.SERVER_USERNAME }}
-        password: ${{ secrets.SERVER_SSH_PRIVATE_KEY }}
-        script: |
+      - name: Pull image and Deploy from DockerHub
+        run: |
           docker pull yutt4n4/todolist:latest
           docker stop django_todolist || true
           docker rm django_todolist || true
