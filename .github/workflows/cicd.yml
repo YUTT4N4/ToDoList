@@ -40,7 +40,7 @@ jobs:
     - name: Set up Docker
       uses: actions/setup-python@v3
       with:
-        python-version: '3.x' # Docker CLI is bundled with GitHub-hosted runners
+        python-version: '3.8'
 
     - name: Delete old container
       run: docker rm -f frontend-order-management
